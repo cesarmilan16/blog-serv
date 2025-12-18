@@ -53,8 +53,8 @@ docker compose up -d --build
 
 | Servicio        | URL                          | Puerto |
 |-----------------|------------------------------|--------|
-| Frontend (Angular) | http://localhost:4201       | 4201   |
-| Backend (API)   | http://localhost:8084/api/posts | 8084   |
+| Frontend (Angular) | [http://localhost:4201](https://blog-helloworld.cesarmilandev.com/) | 4201   |
+| Backend (API)   | [http://localhost:8084/api/posts](https://blog-helloworld-api.cesarmilandev.com/api/posts) | 8084   |
 | MySQL           | localhost                    | 3307   |
 
 ## 3️⃣ Solución de Problemas (Cache y Recarga)
