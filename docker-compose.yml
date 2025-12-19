@@ -27,6 +27,7 @@ services:
 
   # 2. SERVICIO DE BACKEND (SPRING BOOT)
   spring-app:
+    restart: always
     build:
       context: ./backend # Busca el Dockerfile en la carpeta 'backend'
     container_name: spring-app-container
@@ -41,6 +42,7 @@ services:
 
   # 3. SERVICIO DE FRONTEND (ANGULAR + NGINX)
   angular-web:
+    restart: always
     build:
       context: ./frontend # Busca el Dockerfile en la carpeta 'frontend'
     container_name: angular-web-container
