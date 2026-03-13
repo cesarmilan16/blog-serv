@@ -1,47 +1,60 @@
-# 🚀 Blog Full-Stack con Spring Boot y Angular (Docker Compose)
+# Blog Full-Stack con Spring Boot, Angular y MySQL
 
-Este proyecto implementa una aplicación de blog moderna (**CRUD: Crear, Leer, Actualizar, Borrar**) utilizando una arquitectura basada en contenedores con tecnologías habituales en desarrollo empresarial.
+Aplicación CRUD de posts con frontend en Angular, backend REST en Spring Boot y base de datos MySQL, preparada para ejecutarse con Docker Compose.
 
----
+## Stack
 
-## 🧱 Arquitectura y Tecnologías
+- Backend: Spring Boot 4, Spring Web MVC, Spring Data JPA
+- Frontend: Angular 21
+- Base de datos: MySQL 8
+- Servidor web y proxy: NGINX
+- Contenedorización: Docker Compose
 
-| Componente        | Tecnología Principal        | Propósito |
-|------------------|-----------------------------|----------|
-| Backend (API)    | Spring Boot (Java/Kotlin)   | API REST, lógica de negocio y acceso a datos |
-| Frontend (SPA)   | Angular                     | Interfaz de usuario de página única |
-| Proxy / Servidor | NGINX                       | Servir Angular y actuar como proxy inverso |
-| Base de Datos    | MySQL 8.0                   | Persistencia de datos |
-| Orquestación     | Docker Compose              | Gestión y conexión de contenedores |
-
----
-
-## 📦 Estructura del Proyecto
+## Arquitectura
 
 ```text
-/blog-proyecto
-├── /backend/              # Código fuente de Spring Boot
-│   ├── /src/
-│   └── Dockerfile
-├── /frontend/             # Código fuente de Angular
-│   ├── /src/
-│   ├── nginx.conf         # Configuración del proxy NGINX
-│   └── Dockerfile
-└── docker-compose.yml     # Orquestación de servicios
+blog-serv/
+├── backend/              # API REST y acceso a datos
+├── frontend/             # SPA en Angular + NGINX
+├── docs/screenshots/     # Capturas de la aplicación
+└── docker-compose.yml    # Orquestación de servicios
 ```
 
----
+## Funcionalidades
 
-# ⚙️ Requisitos Previos
+- Listado de posts en formato tarjeta
+- Búsqueda por título, contenido o categoría
+- Creación de posts
+- Edición de posts existentes
+- Vista detalle de cada post
+- Eliminación con confirmación
+
+## Capturas
+
+### Listado de posts
+
+![Listado de posts](docs/screenshots/post-list.png)
+
+### Crear post
+
+![Formulario de creación de post](docs/screenshots/post-create.png)
+
+### Detalle de post
+
+![Detalle de un post](docs/screenshots/post-detail.png)
+
+### Editar post
+
+![Formulario de edición de post](docs/screenshots/post-edit.png)
+
+## Requisitos
 
 - Docker
 - Docker Compose
-- JDK 17+ (opcional, para ejecutar el backend fuera de Docker)
-- Node.js 20+ (opcional, para ejecutar el frontend fuera de Docker)
+- Java 21 y Maven Wrapper, si quieres ejecutar el backend en local
+- Node.js 20+, si quieres ejecutar el frontend en local
 
-# 🛠️ Despliegue y Ejecución
-
-## 1️⃣ Construcción y Arranque Inicial
+## Ejecución con Docker
 
 Desde la raíz del proyecto:
 
@@ -49,86 +62,30 @@ Desde la raíz del proyecto:
 docker compose up -d --build
 ```
 
-## 2️⃣ Acceso a la Aplicación
+Servicios expuestos:
 
-| Servicio        | URL                          | Puerto |
-|-----------------|------------------------------|--------|
-| Frontend (Angular) | [http://localhost:4201](https://blog-helloworld.cesarmilandev.com/) | 4201   |
-| Backend (API)   | [http://localhost:8084/api/posts](https://blog-helloworld-api.cesarmilandev.com/api/posts) | 8084   |
-| MySQL           | localhost                    | 3307   |
+- Frontend: `http://localhost:4201`
+- Backend: `http://localhost:8084/api/posts`
+- MySQL: `localhost:3308`
 
-## 3️⃣ Solución de Problemas (Cache y Recarga)
-
-Si realizas cambios en la configuración de NGINX (`nginx.conf`) o en las variables de entorno de Angular (`environment.prod.ts`), Docker puede usar una versión antigua en caché. Para forzar la actualización de la imagen del frontend:
-
-```bash
-docker compose build --no-cache angular-web
-docker compose up -d angular-web
-```
-
-## 4️⃣ Apagar los Contenedores
-
-Para detener y eliminar los contenedores (pero manteniendo los volúmenes de datos):
+Para detener el entorno:
 
 ```bash
 docker compose down
 ```
 
-## 📝 Configuración Clave
+## Desarrollo local
 
-### A. Configuración de Red (Docker Compose)
+### Backend
 
-El servicio `angular-web` accede al backend usando el nombre de servicio definido en `docker-compose.yml`:
-
-```yaml
-# En docker-compose.yml
-services:
-  spring-app: # <--- Nombre del host interno
-    # ...
-```
-
-### B. Configuración de NGINX (Proxy)
-
-El archivo `frontend/nginx.conf` es crucial para:
-
-- **Proxy Inverso:** Redirige todas las llamadas `/api/` al backend de Spring:
-
-```nginx
-proxy_pass http://spring-app:8080/;
-```
-
-- **Enrutamiento SPA:** Permite recargar la página en cualquier ruta de Angular sin obtener un 404.
-
-```nginx
-try_files $uri $uri/ /index.html;
-```
-
-## 👨‍💻 Desarrollo Individual
-
-Si prefieres ejecutar los servicios en tu máquina local para una depuración más rápida:
-
-### Backend (Spring Boot)
-
-1. Asegúrate de que el contenedor MySQL esté activo:
-
-```bash
-docker compose up -d mysql
-```
-
-### Backend (Spring Boot)
-
-- Actualiza tu archivo `application.properties` para usar `localhost:3307` (el puerto mapeado) si lo ejecutas fuera de Docker.
-- Ejecuta la aplicación principal en tu IDE (IntelliJ IDEA) o usando Maven:
+Si ejecutas el backend fuera de Docker, la conexión a MySQL debe apuntar al puerto publicado por Compose (`3308`).
 
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
 
-### Frontend (Angular)
-
-- Asegúrate de que el Backend de Spring Boot esté funcionando en el puerto 8080 (o 8084 si lo ejecutas con Docker).
-- Ejecuta Angular:
+### Frontend
 
 ```bash
 cd frontend
@@ -136,4 +93,15 @@ npm install
 npm start
 ```
 
-> **Nota:** El servidor de desarrollo de Angular generalmente usa el puerto 4200 y requerirá que configures un proxy local si usas el prefijo `/api`.
+El servidor de desarrollo de Angular arranca por defecto en `http://localhost:4200`.
+
+## Configuración relevante
+
+- `docker-compose.yml`: define los servicios `mysql`, `spring-app` y `angular-web`
+- `backend/src/main/resources/application.properties`: configuración de la conexión JDBC y JPA
+- `frontend/nginx.conf`: proxy inverso hacia Spring Boot y soporte para rutas SPA
+
+## Notas
+
+- El backend dentro de Docker se conecta a MySQL usando el host interno `mysql:3306`
+- El frontend en producción se sirve mediante NGINX en el contenedor `angular-web`
