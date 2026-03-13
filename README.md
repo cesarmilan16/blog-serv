@@ -1,33 +1,46 @@
 # Blog Full-Stack con Spring Boot, Angular y MySQL
 
-Aplicación CRUD de posts con frontend en Angular, backend REST en Spring Boot y base de datos MySQL, preparada para ejecutarse con Docker Compose.
+Aplicación de blog con operaciones CRUD completas sobre posts, búsqueda en tiempo real y despliegue contenedorizado con Docker Compose. El proyecto separa frontend, backend y base de datos en servicios independientes, con NGINX como punto de entrada para la SPA.
+
+## Demo
+
+- App: `https://blog-helloworld.cesarmilandev.com/`
+- API: `https://blog-helloworld-api.cesarmilandev.com/api/posts`
+
+## Quick Start
+
+```bash
+docker compose up -d --build
+```
+
+Accesos principales:
+
+| Servicio | URL |
+|---|---|
+| Frontend local | `http://localhost:4201` |
+| Backend local | `http://localhost:8084/api/posts` |
+| MySQL local | `localhost:3308` |
+| Demo pública | `https://blog-helloworld.cesarmilandev.com/` |
 
 ## Stack
 
-- Backend: Spring Boot 4, Spring Web MVC, Spring Data JPA
-- Frontend: Angular 21
-- Base de datos: MySQL 8
-- Servidor web y proxy: NGINX
-- Contenedorización: Docker Compose
+| Capa | Tecnología |
+|---|---|
+| Frontend | Angular 21 |
+| Estilos | Tailwind CSS 4 |
+| Backend | Spring Boot 4, Spring Web MVC, Spring Data JPA |
+| Base de datos | MySQL 8 |
+| Proxy | NGINX |
+| Contenedorización | Docker Compose |
 
-## Arquitectura
+## Qué hace la aplicación
 
-```text
-blog-serv/
-├── backend/              # API REST y acceso a datos
-├── frontend/             # SPA en Angular + NGINX
-├── docs/screenshots/     # Capturas de la aplicación
-└── docker-compose.yml    # Orquestación de servicios
-```
-
-## Funcionalidades
-
-- Listado de posts en formato tarjeta
-- Búsqueda por título, contenido o categoría
-- Creación de posts
-- Edición de posts existentes
-- Vista detalle de cada post
-- Eliminación con confirmación
+- Lista posts en tarjetas con navegación a detalle.
+- Permite buscar por título, contenido o categoría.
+- Crea nuevos posts desde formulario.
+- Edita posts existentes.
+- Elimina posts con confirmación modal.
+- Muestra categorías y etiquetas por entrada.
 
 ## Capturas
 
@@ -47,12 +60,82 @@ blog-serv/
 
 ![Formulario de edición de post](docs/screenshots/post-edit.png)
 
+## Arquitectura
+
+```text
+blog-serv/
+├── backend/              # API REST y persistencia
+├── frontend/             # SPA Angular y build para NGINX
+├── docs/screenshots/     # Capturas del proyecto
+└── docker-compose.yml    # Orquestación de servicios
+```
+
+Flujo de ejecución:
+
+1. El navegador consume la SPA servida por NGINX.
+2. NGINX reenvía las peticiones `/api/*` al servicio `spring-app`.
+3. Spring Boot accede a MySQL mediante JPA.
+
+## Rutas y experiencia de usuario
+
+Rutas principales del frontend:
+
+- `/`: listado de posts
+- `/create`: creación de post
+- `/post/:id`: detalle de un post
+- `/post/edit/:id`: edición de un post
+
+Comportamientos implementados:
+
+- Búsqueda con `debounce` de 300 ms para evitar peticiones excesivas.
+- Actualización del listado tras crear un post.
+- Confirmación antes de eliminar.
+- Soporte de rutas SPA en NGINX mediante `try_files`.
+
+## API REST
+
+Base local: `http://localhost:8084/api/posts`
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/api/posts` | Lista todos los posts |
+| `GET` | `/api/posts?term=angular` | Busca por título, contenido o categoría |
+| `GET` | `/api/posts/{id}` | Recupera un post por id |
+| `POST` | `/api/posts` | Crea un post |
+| `PUT` | `/api/posts/{id}` | Actualiza un post |
+| `DELETE` | `/api/posts/{id}` | Elimina un post |
+
+Ejemplo de payload:
+
+```json
+{
+  "title": "Optimizando el Rendimiento de Angular",
+  "content": "Consejos y trucos para reducir el tiempo de carga inicial...",
+  "category": "Frontend",
+  "tags": "Angular, Performance, Optimizacion"
+}
+```
+
+## Modelo de datos
+
+Cada post contiene:
+
+- `id`
+- `title`
+- `content`
+- `category`
+- `tags`
+
+Validaciones actuales en backend:
+
+- `title`, `content`, `category` y `tags` son obligatorios
+- `content` admite hasta 20.000 caracteres
+
 ## Requisitos
 
-- Docker
-- Docker Compose
-- Java 21 y Maven Wrapper, si quieres ejecutar el backend en local
-- Node.js 20+, si quieres ejecutar el frontend en local
+- Docker y Docker Compose
+- Java 21 para ejecutar el backend en local
+- Node.js 20 o superior para ejecutar el frontend en local
 
 ## Ejecución con Docker
 
@@ -62,23 +145,23 @@ Desde la raíz del proyecto:
 docker compose up -d --build
 ```
 
-Servicios expuestos:
-
-- Frontend: `http://localhost:4201`
-- Backend: `http://localhost:8084/api/posts`
-- MySQL: `localhost:3308`
-
-Para detener el entorno:
+Parar el entorno:
 
 ```bash
 docker compose down
 ```
 
+Servicios definidos en `docker-compose.yml`:
+
+- `mysql`: base de datos con volumen persistente `db-data`
+- `spring-app`: API REST en Spring Boot
+- `angular-web`: build Angular servido con NGINX
+
 ## Desarrollo local
 
 ### Backend
 
-Si ejecutas el backend fuera de Docker, la conexión a MySQL debe apuntar al puerto publicado por Compose (`3308`).
+El `application.properties` actual está preparado para Docker y usa `mysql:3306` como host. Si ejecutas Spring Boot fuera de contenedores, debes adaptar la conexión al puerto publicado por Docker (`localhost:3308`) o usar una configuración específica para local.
 
 ```bash
 cd backend
@@ -93,15 +176,36 @@ npm install
 npm start
 ```
 
-El servidor de desarrollo de Angular arranca por defecto en `http://localhost:4200`.
+El servidor de desarrollo arranca por defecto en `http://localhost:4200`.
+
+Nota importante:
+
+- El `environment` actual del frontend apunta a `https://blog-helloworld-api.cesarmilandev.com`, incluso en desarrollo. Si quieres trabajar completamente en local, conviene ajustar esa URL o introducir entornos separados.
 
 ## Configuración relevante
 
-- `docker-compose.yml`: define los servicios `mysql`, `spring-app` y `angular-web`
-- `backend/src/main/resources/application.properties`: configuración de la conexión JDBC y JPA
-- `frontend/nginx.conf`: proxy inverso hacia Spring Boot y soporte para rutas SPA
+- `docker-compose.yml`: define puertos, red interna y dependencias entre servicios
+- `frontend/nginx.conf`: proxy inverso de `/api/` a `spring-app:8080` y fallback SPA a `index.html`
+- `backend/src/main/resources/application.properties`: datasource JDBC y configuración JPA
 
-## Notas
+## Testing
 
-- El backend dentro de Docker se conecta a MySQL usando el host interno `mysql:3306`
-- El frontend en producción se sirve mediante NGINX en el contenedor `angular-web`
+Cobertura actual:
+
+- Backend: test base de carga de contexto con Spring Boot
+- Frontend: configuración de test disponible en Angular, sin tests funcionales destacados en este estado
+
+## Decisiones técnicas
+
+- NGINX permite servir el build del frontend y actuar como proxy inverso hacia la API.
+- Docker Compose simplifica el arranque coordinado de frontend, backend y base de datos.
+- Spring Data JPA reduce el código manual de acceso a datos y facilita la consulta por término.
+- Angular organiza la UI en componentes separados para listado, detalle, creación, edición y confirmación.
+
+## Mejoras futuras
+
+- Autenticación y autorización para proteger operaciones de escritura
+- Paginación y ordenación en el listado
+- Subida de imágenes para posts
+- Validaciones de formulario más completas en frontend
+- Tests de integración y e2e
