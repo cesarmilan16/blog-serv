@@ -202,7 +202,7 @@ Cobertura actual:
 - Spring Data JPA reduce el código manual de acceso a datos y facilita la consulta por término.
 - Angular organiza la UI en componentes separados para listado, detalle, creación, edición y confirmación.
 
-## Mejoras futuras
+## Posibles mejoras futuras
 
 - Autenticación y autorización para proteger operaciones de escritura
 - Paginación y ordenación en el listado
